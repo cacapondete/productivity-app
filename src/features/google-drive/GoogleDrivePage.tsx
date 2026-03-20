@@ -62,15 +62,12 @@ export default function GoogleDrivePage() {
         }
       } catch (err) {
         if (isMounted) {
-          // Check if it's an abort/cancellation error (expected on unmount)
-          if (err instanceof Error && (err.message.includes('abort') || err.message.includes('AutoCancel'))) {
-            return; // Silently ignore auto-cancellation errors
+          if (err instanceof Error && 'isAbort' in err && err.isAbort) {
+            return; // Ignore intentional cancellation errors
           }
-          if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError('An unknown error occurred');
-          }
+          const message = err instanceof Error ? err.message : 'Failed to load files';
+          setError(message);
+          console.error('Error loading files:', err);
         }
       } finally {
         if (isMounted) {
