@@ -37,6 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button
             onClick={() => {
               client.authStore.clear();
+              localStorage.removeItem('google_token'); // Remove Google token on logout
               window.location.href = '/login';
             }}
             className="w-full px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600"

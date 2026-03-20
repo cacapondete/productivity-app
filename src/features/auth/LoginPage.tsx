@@ -8,19 +8,39 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleOAuthLogin = async (provider: 'google' | 'canva') => {
+  const handleOAuthLogin = async (provider: 'google' | 'oidc') => {
     setLoading(true);
     try {
-      // PocketBase v0.22+ nggunakake authWithOAuth2 sing luwih praktis, bolo.
-      // Iki bakal otomatis buka popup utawa redirect ning provider-e.
-      const authData = await client.collection('users').authWithOAuth2({
-        provider: provider,
-        // Redirect URL iki kudu padha karo sing mbok set ning Google/Canva Console mau
-        // Gunakno fallback string '' ben TypeScript ra ngamuk, jir.
-        redirectTo: provider === 'google' 
-          ? (process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URL || 'http://localhost:3000/login')
-          : (process.env.NEXT_PUBLIC_CANVA_REDIRECT_URL || 'http://localhost:3000/login'),
-      });
+      let authData;
+      // Kanggo Google, kita bakal nyimpen access token-e ning localStorage
+      if (provider === 'google') {
+        authData = await client.collection('users').authWithOAuth2({
+          provider: 'google',
+          scopes: [
+            'https://www.googleapis.com/auth/drive.readonly',
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/userinfo.email',
+          ],
+          urlQuery: {
+            prompt: 'consent',
+            access_type: 'offline',
+          },
+          redirectTo: 'http://localhost:3000/login',
+        });
+        const googleToken = authData.meta?.accessToken; // Use optional chaining to handle undefined meta
+        if (googleToken) {
+          localStorage.setItem('google_token', googleToken); // Store Google token in localStorage
+          router.push('/dashboard'); // Langsung gas menyang dashboard, bosku!
+        } else {
+          console.error('Google access token is missing');
+        }
+      } else {
+        // Kanggo OIDC, proses tetep kaya biasane
+        authData = await client.collection('users').authWithOAuth2({
+          provider: provider,
+          redirectTo: process.env.NEXT_PUBLIC_CANVA_REDIRECT_URL || 'http://localhost:3000/login',
+        });
+      }
 
       if (client.authStore.isValid) {
         console.log('Login success:', authData);
@@ -55,11 +75,11 @@ export default function LoginPage() {
           </button>
 
           <button
-            onClick={() => handleOAuthLogin('canva')}
+            onClick={() => handleOAuthLogin('oidc')}
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-all shadow-md shadow-purple-200 dark:shadow-none disabled:opacity-50"
           >
-            {loading ? 'Processing...' : 'Continue with Canva'}
+            {loading ? 'Processing...' : 'Continue with OIDC'}
           </button>
         </div>
 
