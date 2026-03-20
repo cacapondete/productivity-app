@@ -3,16 +3,18 @@
 import { useState } from 'react';
 import client from '@/lib/pocketbase';
 import { useRouter } from 'next/navigation';
+import { Mail, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleOAuthLogin = async (provider: 'google' | 'oidc') => {
     setLoading(true);
+    setError(null);
     try {
       let authData;
-      // Kanggo Google, kita bakal nyimpen access token-e ning localStorage
       if (provider === 'google') {
         authData = await client.collection('users').authWithOAuth2({
           provider: 'google',
@@ -27,15 +29,14 @@ export default function LoginPage() {
           },
           redirectTo: 'http://localhost:3000/login',
         });
-        const googleToken = authData.meta?.accessToken; // Use optional chaining to handle undefined meta
+        const googleToken = authData.meta?.accessToken;
         if (googleToken) {
-          localStorage.setItem('google_token', googleToken); // Store Google token in localStorage
-          router.push('/dashboard'); // Langsung gas menyang dashboard, bosku!
+          localStorage.setItem('google_token', googleToken);
+          router.push('/dashboard');
         } else {
-          console.error('Google access token is missing');
+          setError('Google access token is missing');
         }
       } else {
-        // Kanggo OIDC, proses tetep kaya biasane
         authData = await client.collection('users').authWithOAuth2({
           provider: provider,
           redirectTo: process.env.NEXT_PUBLIC_CANVA_REDIRECT_URL || 'http://localhost:3000/login',
@@ -43,48 +44,52 @@ export default function LoginPage() {
       }
 
       if (client.authStore.isValid) {
-        console.log('Login success:', authData);
-        router.push('/dashboard'); // Langsung gas menyang dashboard, bosku!
+        router.push('/dashboard');
       }
-    } catch (error) {
-      console.error('Login failed:', error);
-      alert(`Login ${provider} gagal, cok. Cek maneh Client ID karo Secret-mu ning PocketBase.`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <div className="p-8 bg-white dark:bg-gray-800 shadow-xl rounded-2xl w-full max-w-md border border-gray-200 dark:border-gray-700">
-        <h1 className="text-3xl font-extrabold mb-2 text-center text-gray-900 dark:text-white">
-          Welcome Back, Hos!
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-center mb-8">
-          Manage your creative workflow in one place.
-        </p>
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3 tracking-tight">PRODUCTIVITY</h1>
+          <div className="h-1 w-12 md:w-16 bg-black mx-auto mb-4"></div>
+          <p className="text-gray-600 text-xs md:text-sm font-sans">Editorial Workspace Management</p>
+        </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-white border-l-4 border-l-red-600 text-red-600 text-sm font-sans">
+            {error}
+          </div>
+        )}
+
+        {/* Login Options */}
         <div className="space-y-4">
           <button
             onClick={() => handleOAuthLogin('google')}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all disabled:opacity-50"
+            className="w-full px-6 py-3 bg-black text-white hover:bg-gray-900 transition-colors disabled:opacity-50 border border-black flex items-center justify-center gap-3 text-sm font-sans font-medium"
           >
-            {/* Sampeyan iso nambahke icon Google ning kene mengko */}
-            {loading ? 'Processing...' : 'Continue with Google'}
-          </button>
-
-          <button
-            onClick={() => handleOAuthLogin('oidc')}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 text-sm font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-all shadow-md shadow-purple-200 dark:shadow-none disabled:opacity-50"
-          >
-            {loading ? 'Processing...' : 'Continue with OIDC'}
+            {loading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Mail size={16} />
+            )}
+            {loading ? 'Signing in...' : 'Sign in with Google'}
           </button>
         </div>
 
-        <p className="mt-8 text-xs text-center text-gray-400">
-          Powered by Rakahomelab & PocketBase 🚀
+        {/* Footer */}
+        <p className="text-center text-xs text-gray-600 mt-8 font-sans">
+          By signing in, you agree to our terms of service.
         </p>
       </div>
     </div>
