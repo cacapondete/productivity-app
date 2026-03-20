@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { fetchGoogleDriveFiles } from './googleDriveService';
+import { fetchGoogleDriveFiles } from '@/services/googleDriveService';
+import { truncateString, formatDate, formatFileSize } from '@/utils/format';
 import {
   FileIcon,
   FolderIcon,
@@ -40,31 +41,8 @@ const getFileIcon = (mimeType: string) => {
     case 'video':
       return <VideoIcon {...iconProps} />;
     default:
-      return <FileIcon {...iconProps} />;
+    return <FileIcon {...iconProps} />;
   }
-};
-
-const truncateFilename = (name: string, maxLength: number = 50): string => {
-  return name.length > maxLength ? name.substring(0, maxLength) + '...' : name;
-};
-
-const formatDate = (dateString?: string): string => {
-  if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-};
-
-const formatFileSize = (bytes?: string): string => {
-  if (!bytes) return 'N/A';
-  const size = parseInt(bytes, 10);
-  if (size === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(size) / Math.log(k));
-  return Math.round((size / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
 
 export default function GoogleDrivePage() {
@@ -139,7 +117,7 @@ export default function GoogleDrivePage() {
             <FolderIcon size={64} className="mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-serif font-semibold mb-2 tracking-tight">No files found</h3>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Your Drive is empty or the access token doesn't have permission to view your files.
+              Your Drive is empty or the access token does not have permission to view your files.
             </p>
           </div>
         )}
@@ -159,7 +137,7 @@ export default function GoogleDrivePage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {files.map((file, index) => (
+                  {files.map((file) => (
                     <tr
                       key={file.id}
                       className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
@@ -172,7 +150,7 @@ export default function GoogleDrivePage() {
                             className="text-black font-medium truncate"
                             title={file.name}
                           >
-                            {truncateFilename(file.name, 30)}
+                            {truncateString(file.name, 30)}
                           </span>
                         </div>
                       </td>

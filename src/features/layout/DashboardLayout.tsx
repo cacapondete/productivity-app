@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import client from '@/lib/pocketbase';
+import { clearGoogleToken } from '@/hooks/useLocalStorage';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LucideHome },
@@ -72,7 +73,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <button
             onClick={() => {
               client.authStore.clear();
-              localStorage.removeItem('google_token');
+              clearGoogleToken();
               window.location.href = '/login';
             }}
             className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-black text-white hover:bg-gray-900 transition-colors border border-black text-xs font-medium font-sans"

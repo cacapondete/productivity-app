@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   description: "Editorial B&W productivity management platform",
 };
 
+import { AuthProvider } from '@/contexts/AuthContext';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +31,9 @@ export default function RootLayout({
       lang="en"
       className={`${playfair.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-white text-black">{children}</body>
+      <body className="min-h-full flex flex-col bg-white text-black">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

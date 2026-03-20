@@ -1,56 +1,19 @@
 "use client";
 
-import { useState } from 'react';
-import client from '@/lib/pocketbase';
-import { useRouter } from 'next/navigation';
 import { Mail, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const { loginWithGoogle, loading, error } = useAuth();
 
-  const handleOAuthLogin = async (provider: 'google' | 'oidc') => {
-    setLoading(true);
-    setError(null);
+  const handleOAuthLogin = async (provider: 'google') => {
+    if (provider !== 'google') return;
+
     try {
-      let authData;
-      if (provider === 'google') {
-        authData = await client.collection('users').authWithOAuth2({
-          provider: 'google',
-          scopes: [
-            'https://www.googleapis.com/auth/drive.readonly',
-            'https://www.googleapis.com/auth/userinfo.profile',
-            'https://www.googleapis.com/auth/userinfo.email',
-          ],
-          urlQuery: {
-            prompt: 'consent',
-            access_type: 'offline',
-          },
-          redirectTo: 'http://localhost:3000/login',
-        });
-        const googleToken = authData.meta?.accessToken;
-        if (googleToken) {
-          localStorage.setItem('google_token', googleToken);
-          router.push('/dashboard');
-        } else {
-          setError('Google access token is missing');
-        }
-      } else {
-        authData = await client.collection('users').authWithOAuth2({
-          provider: provider,
-          redirectTo: process.env.NEXT_PUBLIC_CANVA_REDIRECT_URL || 'http://localhost:3000/login',
-        });
-      }
-
-      if (client.authStore.isValid) {
-        router.push('/dashboard');
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Login failed';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
+      await loginWithGoogle();
+    } catch {
+      // handled in hook state
     }
   };
 
@@ -73,18 +36,14 @@ export default function LoginPage() {
 
         {/* Login Options */}
         <div className="space-y-4">
-          <button
-            onClick={() => handleOAuthLogin('google')}
-            disabled={loading}
-            className="w-full px-6 py-3 bg-black text-white hover:bg-gray-900 transition-colors disabled:opacity-50 border border-black flex items-center justify-center gap-3 text-sm font-sans font-medium"
-          >
+          <Button onClick={() => handleOAuthLogin('google')} disabled={loading} className="w-full flex items-center justify-center gap-3">
             {loading ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <Mail size={16} />
             )}
             {loading ? 'Signing in...' : 'Sign in with Google'}
-          </button>
+          </Button>
         </div>
 
         {/* Footer */}

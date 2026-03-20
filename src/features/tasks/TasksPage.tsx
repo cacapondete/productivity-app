@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { fetchTasks, createTask, updateTask, deleteTask } from './tasksService';
+import { fetchTasks, createTask, updateTask, deleteTask } from '@/services/tasksService';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Trash2, Plus, CheckCircle, Circle } from 'lucide-react';
 
 interface Task {
@@ -113,13 +115,13 @@ export default function TasksPage() {
       {/* Create Task Form */}
       <div className="mb-8 border border-black p-6 md:p-8 bg-white">
         <div className="grid grid-cols-1 gap-4 mb-4">
-          <input
+          <Input
             type="text"
             placeholder="Task title"
             value={newTask.title}
             onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
             onKeyPress={(e) => e.key === 'Enter' && handleCreate()}
-            className="border border-gray-400 p-3 text-sm font-sans focus:border-black outline-none"
+            className="text-sm font-sans"
           />
           <textarea
             placeholder="Description (optional)"
@@ -128,13 +130,10 @@ export default function TasksPage() {
             className="border border-gray-400 p-3 text-sm font-sans focus:border-black outline-none h-16 resize-none"
           />
         </div>
-        <button
-          onClick={handleCreate}
-          className="w-full px-4 py-3 bg-black text-white hover:bg-gray-900 transition-colors border border-black flex items-center justify-center gap-2 text-sm font-sans font-medium"
-        >
+        <Button onClick={handleCreate} className="w-full flex items-center justify-center gap-2">
           <Plus size={16} />
           Add Task
-        </button>
+        </Button>
       </div>
 
       {/* Tasks List */}
