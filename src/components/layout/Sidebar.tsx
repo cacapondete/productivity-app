@@ -1,6 +1,6 @@
 'use client';
 
-import { LucideHome, LucideCheckSquare, LucideFile, LucideSettings, LogOut, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import client from '@/lib/pocketbase';
@@ -12,10 +12,10 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LucideHome },
-  { name: 'Tasks', href: '/tasks', icon: LucideCheckSquare },
-  { name: 'Google Drive', href: '/google-drive', icon: LucideFile },
-  { name: 'Settings', href: '/settings', icon: LucideSettings },
+  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Tasks', href: '/tasks' },
+  { name: 'Google Drive', href: '/google-drive' },
+  { name: 'Settings', href: '/settings' },
 ];
 
 export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
@@ -28,65 +28,55 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   };
 
   return (
-    <>
-      {/* Sidebar */}
-      <aside
-        className={`fixed lg:static w-72 h-screen bg-white flex flex-col border-r border-black z-50 transform transition-transform duration-300 lg:transform-none ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
-      >
-        {/* Branding */}
-        <div className="flex items-center justify-between px-8 py-10 border-b border-black">
-          <h1 className="text-xs font-serif font-light tracking-[0.2em] uppercase text-black">
-            PRODUCTIVITY
-          </h1>
-          <button
-            onClick={onClose}
-            className="lg:hidden p-1 hover:bg-gray-100 transition-colors"
-          >
-            <X size={18} />
-          </button>
-        </div>
+    <aside
+      className={`fixed left-0 top-0 h-full w-64 bg-white border-r z-50 flex flex-col transform transition-transform duration-300 lg:translate-x-0 ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
+      style={{ borderRightColor: 'rgba(0, 0, 0, 0.05)' }}
+    >
+      <div className="relative px-8 pt-12 pb-8">
+        <h1
+          className="text-[10px]! uppercase font-light tracking-[0.6em] text-black"
+          style={{ fontFamily: 'var(--font-display), serif' }}
+        >
+          PRODUCTIVITY
+        </h1>
+        <button
+          onClick={onClose}
+          className="absolute right-5 top-9 inline-flex h-8 w-8 items-center justify-center text-black lg:hidden"
+          aria-label="Close navigation menu"
+        >
+          <X size={16} />
+        </button>
+      </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-0 py-6">
-          <ul className="space-y-0">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    onClick={onClose}
-                    className={`flex items-center px-8 py-4 font-sans text-sm transition-all border-b border-gray-200 ${
-                      isActive
-                        ? 'text-black font-semibold bg-gray-50'
-                        : 'text-gray-700 hover:text-black hover:bg-gray-50'
-                    }`}
-                  >
-                    {isActive && (
-                      <span className="inline-block w-1.5 h-1.5 bg-black rounded-full mr-3 shrink-0" />
-                    )}
-                    <item.icon className={`w-4 h-4 ${isActive ? '' : 'mr-3'} shrink-0`} />
-                    <span className={isActive ? 'ml-3' : 'ml-3'}>{item.name}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+      <nav className="flex-1 overflow-y-auto py-2">
+        <ul>
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  onClick={onClose}
+                  className={`block px-8 py-3 text-[12px] uppercase tracking-widest text-gray-400 hover:text-black transition-colors ${isActive ? 'text-black' : ''}`}
+                >
+                  {item.name}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
-        {/* Logout Section */}
-        <div className="px-8 py-6 border-t border-black">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-black text-black hover:bg-black hover:text-white transition-colors text-xs font-sans font-semibold"
-          >
-            <LogOut size={14} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-    </>
+      <div className="mt-auto px-8 pb-10 pt-6">
+        <button
+          onClick={handleLogout}
+          className="text-[12px] uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+        >
+          LOGOUT →
+        </button>
+      </div>
+    </aside>
   );
 }

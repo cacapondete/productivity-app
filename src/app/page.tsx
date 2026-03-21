@@ -18,8 +18,10 @@ export default function Home() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-2 border-gray-400 border-t-black"></div>
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <p className="text-[11px] font-serif font-semibold uppercase tracking-[0.24em] text-black">
+        Loading...
+      </p>
     </div>
   );
 }

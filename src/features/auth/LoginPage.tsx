@@ -18,18 +18,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#FFFFFF] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3 tracking-tight">PRODUCTIVITY</h1>
-          <div className="h-1 w-12 md:w-16 bg-black mx-auto mb-4"></div>
-          <p className="text-gray-600 text-xs md:text-sm font-sans">Editorial Workspace Management</p>
+          <h1 className="text-[10px]! uppercase font-light tracking-[0.6em] mb-6 text-black" style={{ fontFamily: 'var(--font-display), serif' }}>PRODUCTIVITY</h1>
+          <div className="h-px w-16 bg-black mx-auto mb-8"></div>
+          <p className="text-gray-400 text-xs font-sans uppercase tracking-[0.15em]">Editorial Workspace</p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-white border-l-4 border-l-red-600 text-red-600 text-sm font-sans">
+          <div className="mb-6 p-4 bg-white border-l-2 border-l-black text-gray-700 text-[11px] font-sans">
             {error}
           </div>
         )}

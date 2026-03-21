@@ -13,6 +13,19 @@ interface Task {
   completed?: boolean;
 }
 
+type PocketBaseAbortError = Error & {
+  isAbort?: boolean;
+};
+
+function isPocketBaseAbortError(error: unknown): error is PocketBaseAbortError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'isAbort' in error &&
+    Boolean((error as PocketBaseAbortError).isAbort)
+  );
+}
+
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState({ title: '', description: '' });
@@ -24,7 +37,6 @@ export default function TasksPage() {
 
     async function loadTasks() {
       try {
-        setLoading(true);
         setError(null);
         const data = await fetchTasks();
         if (isMounted) {
@@ -32,7 +44,7 @@ export default function TasksPage() {
         }
       } catch (err) {
         if (isMounted) {
-          if (err instanceof Error && 'isAbort' in err && err.isAbort) {
+          if (isPocketBaseAbortError(err)) {
             return; // Ignore intentional cancellation errors
           }
           const message = err instanceof Error ? err.message : 'Failed to load tasks';
@@ -90,103 +102,113 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-3xl mx-auto">
+    <div className="mx-auto w-full max-w-6xl px-4 md:px-8 lg:px-20 py-6 md:py-10 lg:py-16">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold mb-3 tracking-tight">Tasks</h1>
-        <div className="h-1 w-12 bg-black"></div>
+      <div className="mb-12">
+        <h1 className="mb-4 text-4xl font-serif font-bold tracking-tight lg:text-5xl" style={{ fontFamily: 'var(--font-display), serif' }}>Tasks</h1>
+        <div className="h-px w-16 bg-black"></div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 p-4 bg-white border-l-4 border-l-red-600 text-red-600 text-sm font-sans">
+        <div className="mb-6 border-l-2 border-l-black bg-white pl-4 py-3 text-[11px] text-gray-700 font-sans\">
           {error}
         </div>
       )}
 
       {/* Loading State */}
       {loading && (
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-400 border-t-black"></div>
+        <div className="mb-6 flex h-32 w-full items-center justify-center border border-black/8 bg-white">
+          <p className="text-[11px] font-serif font-semibold uppercase tracking-[0.22em] text-black">
+            Loading...
+          </p>
         </div>
       )}
 
       {/* Create Task Form */}
-      <div className="mb-8 border border-black p-6 md:p-8 bg-white">
-        <div className="grid grid-cols-1 gap-4 mb-4">
-          <Input
-            type="text"
-            placeholder="Task title"
-            value={newTask.title}
-            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-            onKeyPress={(e) => e.key === 'Enter' && handleCreate()}
-            className="text-sm font-sans"
-          />
-          <textarea
-            placeholder="Description (optional)"
-            value={newTask.description}
-            onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-            className="border border-gray-400 p-3 text-sm font-sans focus:border-black outline-none h-16 resize-none"
-          />
+      <div className="mb-12 w-full border border-black/8 bg-white p-6 lg:p-8">
+        <div className="grid grid-cols-1 gap-4 mb-6">
+          <div>
+            <label className="block text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-black mb-2">Title</label>
+            <Input
+              type="text"
+              placeholder="Enter task title"
+              value={newTask.title}
+              onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+              onKeyPress={(e) => e.key === 'Enter' && handleCreate()}
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-black mb-2">Description</label>
+            <textarea
+              placeholder="Enter task description"
+              value={newTask.description}
+              onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+              className="border border-black w-full px-3 py-2 outline-none focus:border-black focus:ring-0 transition text-[11px] font-sans leading-relaxed h-24 resize-none"
+            />
+          </div>
         </div>
         <Button onClick={handleCreate} className="w-full flex items-center justify-center gap-2">
-          <Plus size={16} />
-          Add Task
+          <Plus size={14} />
+          Create Task
         </Button>
       </div>
 
       {/* Tasks List */}
-      <div className="space-y-3">
-        {tasks.length === 0 ? (
-          <div className="py-12 text-center border border-gray-200 p-8 bg-gray-50 font-sans">
-            <p className="text-gray-600 text-sm">No tasks yet. Create one to get started.</p>
-          </div>
-        ) : (
-          tasks.map((task) => (
-            <div
-              key={task.id}
-              className="flex items-start gap-4 p-5 md:p-6 border border-gray-200 hover:border-black transition-colors bg-white"
-            >
-              <button
-                onClick={() => handleToggle(task.id, task.completed)}
-                className="mt-0.5 hover:opacity-70 transition-opacity shrink-0"
+      {!loading && (
+        <div className="space-y-3">
+          {tasks.length === 0 ? (
+            <div className="w-full border border-black/8 bg-white p-12 text-center font-sans">
+              <p className="text-[11px] text-gray-600 leading-relaxed">No tasks yet. Create one to get started.</p>
+            </div>
+          ) : (
+            tasks.map((task) => (
+              <div
+                key={task.id}
+                className="flex w-full items-start gap-4 border border-black/8 bg-white p-5 lg:p-6 transition-colors hover:bg-gray-50/50"
               >
-                {task.completed ? (
-                  <CheckCircle size={20} className="text-black" />
-                ) : (
-                  <Circle size={20} className="text-gray-400" />
-                )}
-              </button>
-
-              <div className="flex-1 min-w-0 font-sans">
-                <h3
-                  className={`text-sm font-medium ${
-                    task.completed ? 'line-through text-gray-500' : 'text-black'
-                  }`}
+                <button
+                  onClick={() => handleToggle(task.id, task.completed)}
+                  className="mt-0.5 shrink-0 transition-opacity hover:opacity-70"
                 >
-                  {task.title}
-                </h3>
-                {task.description && (
-                  <p
-                    className={`text-xs mt-2 leading-relaxed ${
-                      task.completed ? 'line-through text-gray-400' : 'text-gray-600'
+                  {task.completed ? (
+                    <CheckCircle size={18} className="text-black" />
+                  ) : (
+                    <Circle size={18} className="text-gray-400" />
+                  )}
+                </button>
+
+                <div className="min-w-0 flex-1 font-sans">
+                  <h3
+                    className={`text-[13px] font-medium ${
+                      task.completed ? 'line-through text-gray-500' : 'text-black'
                     }`}
                   >
-                    {task.description}
-                  </p>
-                )}
-              </div>
+                    {task.title}
+                  </h3>
+                  {task.description && (
+                    <p
+                      className={`mt-3 text-xs leading-relaxed ${
+                        task.completed ? 'line-through text-gray-400' : 'text-gray-600'
+                      }`}
+                    >
+                      {task.description}
+                    </p>
+                  )}
+                </div>
 
-              <button
-                onClick={() => handleDelete(task.id)}
-                className="p-2 hover:bg-gray-100 transition-colors shrink-0 -mr-2"
-              >
-                <Trash2 size={16} className="text-gray-600 hover:text-red-600" />
-              </button>
-            </div>
-          ))
-        )}
-      </div>
+                <button
+                  onClick={() => handleDelete(task.id)}
+                  className="shrink-0 p-1 transition-opacity hover:opacity-50"
+                  title="Delete task"
+                >
+                  <Trash2 size={15} className="text-gray-700" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

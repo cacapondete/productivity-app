@@ -3,13 +3,7 @@ import client from '@/lib/pocketbase';
 export type TaskPayload = { title: string; description: string };
 
 export async function fetchTasks() {
-  try {
-    const records = await client.collection('tasks').getFullList();
-    return records;
-  } catch (error) {
-    console.error('Error fetching tasks:', error);
-    throw error;
-  }
+  return await client.collection('tasks').getFullList({ requestKey: null });
 }
 
 export async function createTask(data: TaskPayload) {

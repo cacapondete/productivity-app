@@ -8,40 +8,39 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-white text-black">
-      {/* Mobile Sidebar Overlay */}
+    <div className="min-h-screen bg-[#FFFFFF] text-black">
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar Component */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center gap-3 px-4 py-4 border-b border-gray-200 bg-white">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="p-2 hover:bg-gray-100 transition-colors"
-        >
-          <Menu size={20} />
-        </button>
-        <h1 className="text-xs font-serif font-light tracking-[0.2em] uppercase text-black">
-          PRODUCTIVITY
-        </h1>
+      <div className="min-h-screen bg-[#FFFFFF]">
+        <header className="sticky top-0 z-30 border-b border-black/5 bg-[#FFFFFF] lg:hidden">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="inline-flex h-8 w-8 items-center justify-center text-black hover:opacity-70 transition-opacity"
+              aria-label="Open navigation menu"
+            >
+              <Menu size={18} />
+            </button>
+            <h1
+              className="text-[10px]! uppercase font-light tracking-[0.6em] text-black"
+              style={{ fontFamily: 'var(--font-display), serif' }}
+            >
+              PRODUCTIVITY
+            </h1>
+          </div>
+        </header>
+
+        <main className="w-full bg-[#FFFFFF] px-4 py-6 md:px-8 md:py-10 lg:pl-64! lg:pr-20 lg:py-16">
+          {children}
+        </main>
       </div>
-
-      {/* Main Content Desktop */}
-      <main className="hidden lg:flex lg:flex-1 lg:ml-72 bg-white overflow-auto flex-col">
-        <div className="flex-1">{children}</div>
-      </main>
-
-      {/* Main Content Mobile */}
-      <main className="lg:hidden flex-1 bg-white overflow-auto w-full mt-16">
-        <div className="min-h-full">{children}</div>
-      </main>
     </div>
   );
 }
