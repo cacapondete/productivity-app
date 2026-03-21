@@ -29,37 +29,45 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-full w-64 bg-white border-r z-50 flex flex-col transform transition-transform duration-300 lg:translate-x-0 ${
+      className={`fixed left-0 top-0 h-screen w-64 bg-[#080808] border-r border-white/[0.03] z-50 flex flex-col transform transition-transform duration-300 lg:translate-x-0 rounded-none ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
-      style={{ borderRightColor: 'rgba(0, 0, 0, 0.05)' }}
     >
-      <div className="relative px-8 pt-12 pb-8">
+      {/* Mobile Close Button */}
+      <button
+        onClick={onClose}
+        className="absolute right-6 top-8 inline-flex h-8 w-8 items-center justify-center text-gray-400 hover:text-white lg:hidden transition-colors"
+        aria-label="Close navigation menu"
+      >
+        <X size={16} />
+      </button>
+
+      {/* Branding */}
+      <div className="pt-16 pb-12 px-8 border-b border-white/5">
         <h1
-          className="text-[10px]! uppercase font-light tracking-[0.6em] text-black"
+          className="text-xs uppercase font-light tracking-[0.6em] text-white/90 text-center"
           style={{ fontFamily: 'var(--font-display), serif' }}
         >
           PRODUCTIVITY
         </h1>
-        <button
-          onClick={onClose}
-          className="absolute right-5 top-9 inline-flex h-8 w-8 items-center justify-center text-black lg:hidden"
-          aria-label="Close navigation menu"
-        >
-          <X size={16} />
-        </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-2">
-        <ul>
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-8 px-0">
+        <ul className="space-y-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <li key={item.name}>
+              <li key={item.name} className="relative">
+                {isActive && (
+                  <div className="absolute left-0 top-0 h-full w-[2px] bg-white"></div>
+                )}
                 <Link
                   href={item.href}
                   onClick={onClose}
-                  className={`block px-8 py-3 text-[12px] uppercase tracking-widest text-gray-400 hover:text-black transition-colors ${isActive ? 'text-black' : ''}`}
+                  className={`block px-8 py-3 text-[13px] tracking-wide font-medium transition-colors duration-200 ${
+                    isActive ? 'text-white' : 'text-gray-400 hover:text-white'
+                  }`}
                 >
                   {item.name}
                 </Link>
@@ -69,10 +77,11 @@ export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         </ul>
       </nav>
 
-      <div className="mt-auto px-8 pb-10 pt-6">
+      {/* Logout Section */}
+      <div className="mt-auto px-8 pb-10 pt-8 border-t border-white/5">
         <button
           onClick={handleLogout}
-          className="text-[12px] uppercase tracking-widest text-gray-400 hover:text-black transition-colors"
+          className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-500 hover:text-white transition-colors"
         >
           LOGOUT →
         </button>

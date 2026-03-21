@@ -18,24 +18,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#080808] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-[10px]! uppercase font-light tracking-[0.6em] mb-6 text-black" style={{ fontFamily: 'var(--font-display), serif' }}>PRODUCTIVITY</h1>
-          <div className="h-px w-16 bg-black mx-auto mb-8"></div>
-          <p className="text-gray-400 text-xs font-sans uppercase tracking-[0.15em]">Editorial Workspace</p>
+        <div className="text-center mb-16">
+          <h1 className="text-[12px] uppercase font-light tracking-widest mb-8 text-white" style={{ fontFamily: 'var(--font-display), serif' }}>PRODUCTIVITY</h1>
+          <div className="h-px w-16 bg-white/20 mx-auto mb-12"></div>
+          <p className="text-gray-500 text-[11px] font-sans uppercase tracking-widest">Design Studio</p>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-white border-l-2 border-l-black text-gray-700 text-[11px] font-sans">
+          <div className="mb-8 p-6 bg-[#121212] border-l-2 border-l-white/30 text-gray-300 text-[12px] font-sans">
             {error}
           </div>
         )}
 
         {/* Login Options */}
-        <div className="space-y-4">
+        <div className="space-y-4 mb-12">
           <Button onClick={() => handleOAuthLogin('google')} disabled={loading} className="w-full flex items-center justify-center gap-3">
             {loading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -47,8 +47,8 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-gray-600 mt-8 font-sans">
-          By signing in, you agree to our terms of service.
+        <p className="text-center text-[11px] text-gray-600 font-sans leading-relaxed">
+          By signing in, you agree to our terms of<br />service and privacy policy.
         </p>
       </div>
     </div>
