@@ -62,7 +62,7 @@ const getFileIcon = (mimeType: string) => {
 
 export default function GoogleDrivePage() {
   const [files, setFiles] = useState<GoogleFile[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<FileCategory[]>(['workspaces', 'images', 'videos', 'other', 'folder']);
+  const [selectedCategories, setSelectedCategories] = useState<FileCategory[]>(['workspaces']);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 

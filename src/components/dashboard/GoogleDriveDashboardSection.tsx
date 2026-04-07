@@ -79,7 +79,7 @@ const getFileIcon = (mimeType: string) => {
 
 export function useGoogleDriveFiles() {
   const [files, setFiles] = useState<GoogleFile[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<FileCategory[]>(['workspaces', 'images', 'videos', 'other', 'folder']);
+  const [selectedCategories, setSelectedCategories] = useState<FileCategory[]>(['workspaces']);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
