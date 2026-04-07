@@ -111,8 +111,10 @@ export default function GoogleDrivePage() {
 
         {/* Error State */}
         {error && (
-          <div className="mb-8 bg-[#121212] border-l-2 border-l-white/30 pl-6 py-4 font-sans">
-            <p className="text-[12px] text-gray-300">{error}</p>
+          <div className="mb-8 bg-[#121212] border-l-4 border-l-red-500 pl-6 py-4 font-sans rounded-r">
+            <p className="text-[12px] font-semibold text-red-200 mb-2">Unable to Load Files</p>
+            <p className="text-[12px] text-red-300">{error}</p>
+            <p className="text-[11px] text-red-400/70 mt-2">Please make sure your Google account is connected properly.</p>
           </div>
         )}
 
@@ -122,35 +124,38 @@ export default function GoogleDrivePage() {
           <div className="lg:col-span-2">
             {/* Loading State */}
             {loading && (
-                <div className="mb-8 flex h-32 w-full items-center justify-center border border-white/5 bg-[#121212]">
-                  <p className="text-[11px] font-serif font-semibold uppercase tracking-widest text-gray-400">
-                    Loading...
-                  </p>
+              <div className="mb-8 flex h-40 w-full items-center justify-center border border-white/5 bg-[#121212] rounded-sm">
+                <div className="text-center">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-3 border-gray-600 border-t-white mb-4"></div>
+                  <p className="text-[12px] font-sans text-gray-400 tracking-widest uppercase">Loading your files...</p>
+                </div>
               </div>
             )}
 
             {/* Empty State */}
             {!loading && !error && files.length === 0 && (
-              <div className="border border-white/5 bg-[#121212] p-16 text-center font-sans">
-                <FolderIcon size={48} className="mx-auto mb-6 text-gray-700" />
-                <h3 className="text-[13px] font-sans font-semibold mb-4 tracking-widest uppercase text-white">No files found</h3>
-                <p className="text-gray-500 text-[12px] leading-relaxed">
-                  Your Drive is empty or the access token does not have permission to view your files.
+              <div className="border border-white/5 bg-[#121212] p-12 md:p-16 text-center font-sans rounded-sm">
+                <FolderIcon size={56} className="mx-auto mb-6 text-gray-700" />
+                <h3 className="text-[14px] font-sans font-semibold mb-3 tracking-widest uppercase text-white">No Files Found</h3>
+                <p className="text-gray-500 text-[12px] leading-relaxed mb-4 max-w-md mx-auto">
+                  Your Google Drive is empty or you don't have permission to view these files. Try connecting your account or checking your permissions.
                 </p>
+                <p className="text-gray-600 text-[11px] tracking-widest uppercase">Showing workspace files only</p>
               </div>
             )}
 
             {/* Files Table */}
             {!loading && !error && files.length > 0 && (
-              <div className="w-full overflow-x-auto border border-white/5 bg-[#121212]">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-[#121212] border-b border-white/5">
-                      <th className="px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500">Name</th>
-                      <th className="px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hidden sm:table-cell">Type</th>
-                      <th className="px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hidden md:table-cell">Modified</th>
-                      <th className="px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hidden lg:table-cell">Size</th>
-                      <th className="px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500">Actions</th>
+              <div className="w-full border border-white/5 bg-[#121212] rounded-sm overflow-hidden">
+                <div className="w-full overflow-x-auto">
+                  <table className="w-full min-w-full">
+                    <thead>
+                      <tr className="bg-[#121212] border-b border-white/5 hover:bg-[#121212]">
+                        <th className="px-4 md:px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500">Name</th>
+                        <th className="px-4 md:px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hidden sm:table-cell">Type</th>
+                      <th className="px-4 md:px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hidden md:table-cell">Modified</th>
+                      <th className="px-4 md:px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hidden lg:table-cell">Size</th>
+                      <th className="px-4 md:px-6 py-4 text-left text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -160,8 +165,8 @@ export default function GoogleDrivePage() {
                         className="border-b border-white/3 hover:bg-[#1A1A1A] transition-colors"
                       >
                         {/* Name Column */}
-                        <td className="px-6 py-4 text-xs md:text-[12px] font-sans">
-                          <div className="flex items-center gap-3">
+                        <td className="px-4 md:px-6 py-4 text-xs md:text-[12px] font-sans">
+                          <div className="flex items-center gap-3 min-w-0">
                             {getFileIcon(file.mimeType)}
                             <span
                               className="text-white font-medium truncate"
@@ -173,7 +178,7 @@ export default function GoogleDrivePage() {
                         </td>
 
                         {/* Type Column */}
-                        <td className="px-6 py-4 text-xs font-sans hidden sm:table-cell">
+                        <td className="px-4 md:px-6 py-4 text-xs font-sans hidden sm:table-cell">
                           <span className="text-[11px] text-gray-500">
                             {getMimeTypeCategory(file.mimeType) === 'folder'
                               ? 'Folder'
@@ -182,23 +187,23 @@ export default function GoogleDrivePage() {
                         </td>
 
                         {/* Modified Column */}
-                        <td className="px-6 py-4 text-xs text-gray-500 font-sans hidden md:table-cell">
+                        <td className="px-4 md:px-6 py-4 text-xs text-gray-500 font-sans hidden md:table-cell">
                           {formatDate(file.modifiedTime)}
-                          </td>
+                        </td>
 
                         {/* Size Column */}
-                        <td className="px-6 py-4 text-xs text-gray-500 font-sans hidden lg:table-cell">
+                        <td className="px-4 md:px-6 py-4 text-xs text-gray-500 font-sans hidden lg:table-cell">
                           {formatFileSize(file.size)}
                         </td>
 
                         {/* Actions Column */}
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-4">
+                        <td className="px-4 md:px-6 py-4">
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                             <a
                               href={`https://drive.google.com/open?id=${file.id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-[11px] font-sans font-medium text-white hover:text-gray-300 transition-colors uppercase tracking-widest"
+                              className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-sans font-medium text-white hover:text-gray-300 transition-colors uppercase tracking-widest hover:bg-white/5 px-2 py-1.5 rounded"
                               title="Open in Google Drive"
                             >
                               View →
@@ -206,10 +211,10 @@ export default function GoogleDrivePage() {
                             {getMimeTypeCategory(file.mimeType) !== 'folder' && (
                               <a
                                 href={`https://drive.google.com/u/0/uc?id=${file.id}&export=download`}
-                                className="inline-flex items-center gap-1 text-[11px] font-sans font-medium text-white hover:text-gray-300 transition-colors uppercase tracking-widest"
+                                className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-sans font-medium text-white hover:text-gray-300 transition-colors uppercase tracking-widest hover:bg-white/5 px-2 py-1.5 rounded"
                                 title="Download file"
                               >
-                                Download ↓
+                                Download
                               </a>
                             )}
                           </div>
@@ -220,21 +225,24 @@ export default function GoogleDrivePage() {
                 </table>
 
                 {/* Footer */}
-                <div className="bg-[#121212] border-t border-white/5 px-6 py-4 font-sans">
+                <div className="bg-[#121212] border-t border-white/5 px-4 md:px-6 py-4 font-sans rounded-b-sm">
                   <p className="text-[11px] text-gray-500">
-                    Showing {filterFilesByCategories(files, selectedCategories).length} of {files.length} file{files.length !== 1 ? 's' : ''}
+                    Showing <span className="text-white font-semibold">{filterFilesByCategories(files, selectedCategories).length}</span> of <span className="text-white font-semibold">{files.length}</span> file{files.length !== 1 ? 's' : ''}
                   </p>
+                </div>
                 </div>
               </div>
             )}
           </div>
 
           {/* Right: 1/3 - Filter Panel */}
-          <div className="lg:col-span-1">
-            <FileTypeFilter
-              selectedCategories={selectedCategories}
-              onCategoriesChange={setSelectedCategories}
-            />
+          <div className="lg:col-span-1 order-first lg:order-last">
+            <div className="sticky top-4 lg:top-20">
+              <FileTypeFilter
+                selectedCategories={selectedCategories}
+                onCategoriesChange={setSelectedCategories}
+              />
+            </div>
           </div>
         </div>
       </div>

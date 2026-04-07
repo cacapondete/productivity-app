@@ -33,6 +33,8 @@ export default function TasksPage() {
   const [newTask, setNewTask] = useState({ title: '', description: '', due_date: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const toLocalDatetimeValue = (value: string) => {
     const date = new Date(value);
@@ -76,6 +78,7 @@ export default function TasksPage() {
 
   const handleCreate = async () => {
     if (!newTask.title.trim() || !newTask.due_date) return;
+    setIsSubmitting(true);
     try {
       const task = await createTask({
         ...newTask,
@@ -83,10 +86,14 @@ export default function TasksPage() {
       });
       setTasks((prev) => [(task as unknown as Task), ...prev]);
       setNewTask({ title: '', description: '', due_date: '' });
+      setSuccessMessage('Task created successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create task';
       setError(message);
       console.error('Error creating task:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -125,57 +132,83 @@ export default function TasksPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-8 border-l-2 border-l-white/30 bg-[#121212] pl-6 py-4 text-[12px] text-gray-300 font-sans">
-          {error}
+        <div className="mb-8 border-l-4 border-l-red-500 bg-red-950/20 pl-6 py-4 text-[12px] text-red-300 font-sans rounded-r">
+          <p className="font-semibold text-red-200 mb-1">Error</p>
+          <p>{error}</p>
         </div>
+      )}
 
+      {/* Success Message */}
+      {successMessage && (
+        <div className="mb-8 border-l-4 border-l-green-500 bg-green-950/20 pl-6 py-4 text-[12px] text-green-300 font-sans rounded-r animate-pulse">
+          <p className="font-semibold text-green-200">{successMessage}</p>
+        </div>
       )}
 
       {/* Loading State */}
       {loading && (
-        <div className="mb-8 flex h-32 w-full items-center justify-center bg-[#121212] border border-white/5">
-          <p className="text-[11px] font-serif font-semibold uppercase tracking-widest text-gray-400">
-            Loading...
-          </p>
+        <div className="mb-8 flex h-32 w-full items-center justify-center bg-[#121212] border border-white/5 rounded-sm">
+          <div className="text-center">
+            <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-600 border-t-white mb-3"></div>
+            <p className="text-[11px] font-serif font-semibold uppercase tracking-widest text-gray-400">
+              Loading tasks...
+            </p>
+          </div>
         </div>
       )}
 
       {/* Create Task Form */}
-      <div className="mb-16 w-full bg-[#121212] p-8 lg:p-10 border border-white/5">
+      <div className="mb-16 w-full bg-[#121212] p-6 md:p-8 lg:p-10 border border-white/5 rounded-sm">
         <h3 className="mb-8 text-[12px] font-sans font-semibold uppercase tracking-widest text-white">Create New Task</h3>
         <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-2">
           <div>
-            <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Title</label>
+            <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Task Title *</label>
             <Input
               type="text"
-              placeholder="Enter task title..."
+              placeholder="e.g., Design homepage mockup"
               value={newTask.title}
               onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-              onKeyPress={(e) => e.key === 'Enter' && handleCreate()}
+              onKeyPress={(e) => e.key === 'Enter' && !isSubmitting && handleCreate()}
+              disabled={isSubmitting}
             />
           </div>
           <div>
-            <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Deadline Time</label>
+            <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Deadline *</label>
             <Input
               type="datetime-local"
               value={newTask.due_date}
               onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
               min={toLocalDatetimeValue(new Date().toISOString())}
+              disabled={isSubmitting}
             />
           </div>
           <div className="lg:col-span-2">
-            <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Description</label>
+            <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Description (Optional)</label>
             <textarea
-              placeholder="Enter task description..."
+              placeholder="Add more context about this task..."
               value={newTask.description}
               onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-              className="bg-[#1A1A1A] border-b border-white/10 w-full px-0 py-2 outline-none focus:border-b focus:border-white/60 transition text-[12px] font-sans leading-relaxed h-20 resize-none text-white placeholder:text-gray-600"
+              disabled={isSubmitting}
+              className="bg-[#1A1A1A] border-b border-white/10 w-full px-3 py-3 outline-none focus:border-b focus:border-white/80 focus:shadow-[0_1px_0_0_rgba(255,255,255,0.4)] focus:bg-[#252525] transition-all text-[12px] font-sans leading-relaxed h-24 resize-none text-white placeholder:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
         </div>
-        <Button onClick={handleCreate} className="w-full lg:w-auto" disabled={!newTask.title.trim() || !newTask.due_date}>
-          <Plus size={14} className="inline mr-2" />
-          Create Task
+        <Button 
+          onClick={handleCreate} 
+          className="w-full lg:w-auto" 
+          disabled={!newTask.title.trim() || !newTask.due_date || isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-gray-400 mr-2"></div>
+              Creating...
+            </>
+          ) : (
+            <>
+              <Plus size={14} className="inline mr-2" />
+              Create Task
+            </>
+          )}
         </Button>
       </div>
 
@@ -183,23 +216,26 @@ export default function TasksPage() {
       {!loading && (
         <div className="space-y-4">
           {tasks.length === 0 ? (
-            <div className="w-full bg-[#121212] p-12 text-center font-sans border border-white/5">
-              <p className="text-[12px] text-gray-500 leading-relaxed">No tasks yet. Start by creating one above.</p>
+            <div className="w-full bg-[#121212] p-12 md:p-16 text-center font-sans border border-white/5 rounded-sm">
+              <div className="text-5xl mb-6 opacity-30">📋</div>
+              <p className="text-[13px] font-semibold text-white mb-2">No tasks yet</p>
+              <p className="text-[12px] text-gray-500 leading-relaxed">Start by creating a task above to organize your work and set deadlines.</p>
             </div>
           ) : (
             tasks.map((task) => (
               <div
                 key={task.id}
-                className="flex w-full items-start gap-4 bg-[#121212] p-6 lg:p-8 transition-colors hover:bg-[#1A1A1A] border border-white/5"
+                className="flex w-full items-start gap-4 bg-[#121212] p-6 md:p-8 transition-all hover:bg-[#1A1A1A] border border-white/5 rounded-sm hover:border-white/10 group"
               >
                 <button
                   onClick={() => handleToggle(task.id, task.status)}
-                  className="mt-0.5 shrink-0 transition-opacity hover:opacity-70"
+                  className="mt-1.5 shrink-0 transition-all hover:opacity-70 active:scale-90 min-h-11 flex items-center justify-center -ml-2 px-2"
+                  title={task.status === 'done' ? 'Mark as incomplete' : 'Mark as complete'}
                 >
                   {task.status === 'done' ? (
-                    <CheckCircle size={18} className="text-white/60" />
+                    <CheckCircle size={20} className="text-green-500/70 group-hover:text-green-400" />
                   ) : (
-                    <Circle size={18} className="text-gray-600" />
+                    <Circle size={20} className="text-gray-600 group-hover:text-gray-500" />
                   )}
                 </button>
 
@@ -230,10 +266,10 @@ export default function TasksPage() {
 
                 <button
                   onClick={() => handleDelete(task.id)}
-                  className="shrink-0 p-1 transition-opacity hover:opacity-50"
+                  className="shrink-0 transition-all hover:opacity-50 active:scale-90 min-h-11 flex items-center justify-center -mr-2 px-2"
                   title="Delete task"
                 >
-                  <Trash2 size={16} className="text-gray-600" />
+                  <Trash2 size={18} className="text-gray-600 group-hover:text-red-500/70" />
                 </button>
               </div>
             ))

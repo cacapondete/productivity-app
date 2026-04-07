@@ -32,38 +32,41 @@ export function FileTypeFilter({ selectedCategories, onCategoriesChange }: FileT
         <h3 className="text-[11px] font-sans font-semibold uppercase tracking-widest text-white mb-4">
           Filter by Type
         </h3>
-        <div className="flex gap-3">
+        <div className="space-y-2 flex flex-col gap-2">
           <button
             onClick={selectAll}
-            className="text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+            className="text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hover:text-white transition-colors text-left py-2 px-2 hover:bg-white/5 rounded"
+            title="Select all file types"
           >
-            All
+            ✓ All Types
           </button>
-          <span className="text-gray-600">•</span>
           <button
             onClick={clearAll}
-            className="text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hover:text-white transition-colors"
+            className="text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 hover:text-white transition-colors text-left py-2 px-2 hover:bg-white/5 rounded"
+            title="Deselect all file types"
           >
-            Clear
+            ✕ Clear All
           </button>
         </div>
       </div>
 
-      <div className="space-y-3">
+      <div className="border-t border-white/5 pt-6 space-y-3">
+        <p className="text-[10px] font-sans text-gray-600 uppercase tracking-widest">Selected: {selectedCategories.length}</p>
         {filterOptions.map((category) => {
           const isSelected = selectedCategories.includes(category);
           return (
             <label
               key={category}
-              className="flex items-center gap-3 cursor-pointer text-[12px] font-sans transition-colors hover:text-white"
+              className="flex items-center gap-3 cursor-pointer text-[12px] font-sans transition-all hover:bg-white/5 p-2 rounded -mx-2 select-none"
             >
               <input
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => toggleCategory(category)}
-                className="w-4 h-4 accent-white bg-[#1A1A1A] border border-white/10 rounded"
+                className="w-5 h-5 accent-white bg-[#1A1A1A] border border-white/20 rounded hover:border-white/40 cursor-pointer"
+                title={`Toggle ${getCategoryLabel(category)} filter`}
               />
-              <span className={isSelected ? 'text-white' : 'text-gray-500'}>
+              <span className={`${isSelected ? 'text-white font-medium' : 'text-gray-500'}`}>
                 {getCategoryLabel(category)}
               </span>
             </label>
