@@ -5,12 +5,14 @@ import { fetchTasks, createTask, updateTask, deleteTask } from '@/services/tasks
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Trash2, Plus, CheckCircle, Circle } from 'lucide-react';
+import { formatDateTime, formatRemainingTime } from '@/utils/format';
 
 interface Task {
   id: string;
   title: string;
   description: string;
-  completed?: boolean;
+  due_date?: string | null;
+  status?: 'todo' | 'doing' | 'done';
 }
 
 type PocketBaseAbortError = Error & {
@@ -28,9 +30,16 @@ function isPocketBaseAbortError(error: unknown): error is PocketBaseAbortError {
 
 export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTask, setNewTask] = useState({ title: '', description: '' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', due_date: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const toLocalDatetimeValue = (value: string) => {
+    const date = new Date(value);
+    const offset = date.getTimezoneOffset();
+    const localTime = new Date(date.getTime() - offset * 60 * 1000);
+    return localTime.toISOString().slice(0, 16);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -66,11 +75,14 @@ export default function TasksPage() {
   }, []);
 
   const handleCreate = async () => {
-    if (!newTask.title.trim()) return;
+    if (!newTask.title.trim() || !newTask.due_date) return;
     try {
-      const task = await createTask(newTask);
+      const task = await createTask({
+        ...newTask,
+        due_date: new Date(newTask.due_date).toISOString(),
+      });
       setTasks((prev) => [(task as unknown as Task), ...prev]);
-      setNewTask({ title: '', description: '' });
+      setNewTask({ title: '', description: '', due_date: '' });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create task';
       setError(message);
@@ -78,11 +90,12 @@ export default function TasksPage() {
     }
   };
 
-  const handleToggle = async (id: string, completed?: boolean) => {
+  const handleToggle = async (id: string, status?: Task['status']) => {
     try {
-      await updateTask(id, { title: '', description: '' });
+      const nextStatus: Task['status'] = status === 'done' ? 'todo' : 'done';
+      await updateTask(id, { status: nextStatus });
       setTasks((prev) =>
-        prev.map((task) => (task.id === id ? { ...task, completed: !completed } : task))
+        prev.map((task) => (task.id === id ? { ...task, status: nextStatus } : task))
       );
     } catch (err) {
       console.error('Failed to toggle task', err);
@@ -112,7 +125,7 @@ export default function TasksPage() {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-8 border-l-2 border-l-white/30 bg-[#121212] pl-6 py-4 utext-[12px] text-gray-300 font-sans">
+        <div className="mb-8 border-l-2 border-l-white/30 bg-[#121212] pl-6 py-4 text-[12px] text-gray-300 font-sans">
           {error}
         </div>
 
@@ -130,7 +143,7 @@ export default function TasksPage() {
       {/* Create Task Form */}
       <div className="mb-16 w-full bg-[#121212] p-8 lg:p-10 border border-white/5">
         <h3 className="mb-8 text-[12px] font-sans font-semibold uppercase tracking-widest text-white">Create New Task</h3>
-        <div className="grid grid-cols-1 gap-6 mb-8">
+        <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-2">
           <div>
             <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Title</label>
             <Input
@@ -142,6 +155,15 @@ export default function TasksPage() {
             />
           </div>
           <div>
+            <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Deadline Time</label>
+            <Input
+              type="datetime-local"
+              value={newTask.due_date}
+              onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
+              min={toLocalDatetimeValue(new Date().toISOString())}
+            />
+          </div>
+          <div className="lg:col-span-2">
             <label className="block text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500 mb-3">Description</label>
             <textarea
               placeholder="Enter task description..."
@@ -151,7 +173,7 @@ export default function TasksPage() {
             />
           </div>
         </div>
-        <Button onClick={handleCreate} className="w-full lg:w-auto">
+        <Button onClick={handleCreate} className="w-full lg:w-auto" disabled={!newTask.title.trim() || !newTask.due_date}>
           <Plus size={14} className="inline mr-2" />
           Create Task
         </Button>
@@ -171,10 +193,10 @@ export default function TasksPage() {
                 className="flex w-full items-start gap-4 bg-[#121212] p-6 lg:p-8 transition-colors hover:bg-[#1A1A1A] border border-white/5"
               >
                 <button
-                  onClick={() => handleToggle(task.id, task.completed)}
+                  onClick={() => handleToggle(task.id, task.status)}
                   className="mt-0.5 shrink-0 transition-opacity hover:opacity-70"
                 >
-                  {task.completed ? (
+                  {task.status === 'done' ? (
                     <CheckCircle size={18} className="text-white/60" />
                   ) : (
                     <Circle size={18} className="text-gray-600" />
@@ -183,15 +205,22 @@ export default function TasksPage() {
 
                 <div className="min-w-0 flex-1 font-sans">
                   <h3
-                    className={`text-[13px] font-medium ${ task.completed ? 'line-through text-gray-600' : 'text-white'
+                    className={`text-[13px] font-medium ${ task.status === 'done' ? 'line-through text-gray-600' : 'text-white'
                     }`}
                   >
                     {task.title}
                   </h3>
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-gray-500">
+                    <span>Deadline</span>
+                    <span className="text-white/80">{formatDateTime(task.due_date ?? undefined)}</span>
+                  </div>
+                  <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-gray-500">
+                    {formatRemainingTime(task.due_date ?? undefined)}
+                  </div>
                   {task.description && (
                     <p
                       className={`mt-3 text-[12px] leading-relaxed ${
-                        task.completed ? 'line-through text-gray-700' : 'text-gray-400'
+                        task.status === 'done' ? 'line-through text-gray-700' : 'text-gray-400'
                       }`}
                     >
                       {task.description}

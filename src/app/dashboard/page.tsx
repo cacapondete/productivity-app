@@ -1,12 +1,44 @@
+import { unstable_noStore as noStore } from 'next/cache';
 import DashboardLayout from '@/features/layout/DashboardLayout';
+import { fetchTasks } from '@/services/tasksService';
+import { formatDateTime, formatRemainingTime } from '@/utils/format';
 
-export default function Page() {
+type DashboardTask = {
+  id: string;
+  title: string;
+  description?: string;
+  due_date?: string | null;
+  status?: 'todo' | 'doing' | 'done';
+};
+
+function sortTasksByDeadline(tasks: DashboardTask[]) {
+  return [...tasks]
+    .filter((task) => Boolean(task.due_date))
+    .sort((left, right) => {
+      const leftTime = new Date(left.due_date as string).getTime();
+      const rightTime = new Date(right.due_date as string).getTime();
+      return leftTime - rightTime;
+    })
+    .slice(0, 5);
+}
+
+export default async function Page() {
+  noStore();
+
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+
+  let recentTasks: DashboardTask[] = [];
+
+  try {
+    recentTasks = sortTasksByDeadline((await fetchTasks()) as unknown as DashboardTask[]);
+  } catch (error) {
+    console.error('Failed to load dashboard tasks:', error);
+  }
 
   return (
     <DashboardLayout>
@@ -31,15 +63,53 @@ export default function Page() {
             {/* Recent Tasks */}
             <div className="w-full border-b border-white/5 pb-12 lg:pb-16">
               <div className="mb-4 text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500">
-                RECENT
+                RECENT DEADLINES
               </div>
-              <h2 className="mb-6 text-2xl lg:text-3xl font-serif font-light tracking-[0.05em] text-white uppercase">Tasks</h2>
+              <h2 className="mb-6 text-2xl lg:text-3xl font-serif font-light tracking-[0.05em] text-white uppercase">Top 5 Tasks</h2>
               <p className="mb-8 max-w-lg text-[13px] leading-relaxed text-gray-400">
-                Monitor your active tasks and workflow progress. Stay organized across all your editorial projects and deadlines.
+                The five nearest deadlines surface here so the dashboard stays focused on what needs attention first.
               </p>
-              <a 
-                href="/tasks" 
-                className="group inline-flex items-center gap-3 text-[12px] font-sans font-semibold uppercase tracking-widest text-white transition-colors hover:text-gray-300"
+
+              {recentTasks.length > 0 ? (
+                <div className="space-y-4">
+                  {recentTasks.map((task) => (
+                    <div key={task.id} className="border border-white/5 bg-[#121212] p-5 transition-colors hover:bg-[#1A1A1A]">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-8">
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500">
+                            {task.status ?? 'todo'}
+                          </div>
+                          <h3 className="mt-2 text-[13px] font-medium tracking-wide text-white">{task.title}</h3>
+                          {task.description && (
+                            <p className="mt-3 max-w-2xl text-[12px] leading-relaxed text-gray-400">
+                              {task.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="shrink-0 text-left lg:text-right">
+                          <div className="text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500">
+                            Deadline
+                          </div>
+                          <div className="mt-2 text-[13px] font-medium tracking-wide text-white">
+                            {formatDateTime(task.due_date ?? undefined)}
+                          </div>
+                          <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-gray-500">
+                            {formatRemainingTime(task.due_date ?? undefined)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="border border-white/5 bg-[#121212] p-6 text-[13px] leading-relaxed text-gray-400">
+                  No tasks with deadlines yet. Add one in the Tasks area and it will appear here.
+                </div>
+              )}
+
+              <a
+                href="/tasks"
+                className="group mt-8 inline-flex items-center gap-3 text-[12px] font-sans font-semibold uppercase tracking-widest text-white transition-colors hover:text-gray-300"
               >
                 <span>View All Tasks</span>
                 <span className="group-hover:translate-x-1 transition-transform">→</span>

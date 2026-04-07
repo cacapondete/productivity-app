@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="min-h-screen bg-[#080808]">
+      <div className="min-h-screen bg-[#080808] lg:ml-64">
         <header className="sticky top-0 z-30 border-b border-white/5 bg-[#080808] lg:hidden">
           <div className="flex items-center gap-4 px-6 py-4">
             <button
@@ -37,7 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <main className="w-full bg-[#080808] px-6 py-10 md:px-12 md:py-16 lg:pl-64 lg:pr-24 lg:py-20">
+        <main className="w-full bg-[#080808] px-6 py-10 md:px-12 md:py-16 lg:pr-24 lg:py-20">
           {children}
         </main>
       </div>
