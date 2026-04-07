@@ -2,6 +2,8 @@ import { unstable_noStore as noStore } from 'next/cache';
 import DashboardLayout from '@/features/layout/DashboardLayout';
 import { fetchTasks } from '@/services/tasksService';
 import { formatDateTime, formatRemainingTime } from '@/utils/format';
+import { useGoogleDriveFiles, GoogleDriveDashboardView, GoogleDriveDashboardContainer, GoogleDriveFilterPanel, GoogleDriveDashboardProviderWrapper } from '@/components/dashboard/GoogleDriveDashboardSection';
+import { FileTypeFilter } from '@/components/ui/FileTypeFilter';
 
 type DashboardTask = {
   id: string;
@@ -22,6 +24,10 @@ function sortTasksByDeadline(tasks: DashboardTask[]) {
     .slice(0, 5);
 }
 
+function getActiveTaskCount(tasks: DashboardTask[]) {
+  return tasks.filter((task) => task.status !== 'done').length;
+}
+
 export default async function Page() {
   noStore();
 
@@ -33,9 +39,12 @@ export default async function Page() {
   });
 
   let recentTasks: DashboardTask[] = [];
+  let activeTaskCount = 0;
 
   try {
-    recentTasks = sortTasksByDeadline((await fetchTasks()) as unknown as DashboardTask[]);
+    const allTasks = (await fetchTasks()) as unknown as DashboardTask[];
+    recentTasks = sortTasksByDeadline(allTasks);
+    activeTaskCount = getActiveTaskCount(allTasks);
   } catch (error) {
     console.error('Failed to load dashboard tasks:', error);
   }
@@ -57,7 +66,8 @@ export default async function Page() {
         </div>
 
         {/* Main Grid: 2/3 Left + 1/3 Right */}
-        <div className="grid w-full grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-20">
+        <GoogleDriveDashboardProviderWrapper>
+          <div className="grid w-full grid-cols-1 gap-16 lg:grid-cols-3 lg:gap-20">
           {/* Left: 2/3 - Recent Activity Section */}
           <div className="space-y-16 lg:col-span-2 lg:space-y-20">
             {/* Recent Tasks */}
@@ -117,22 +127,7 @@ export default async function Page() {
             </div>
 
             {/* Google Drive Integration */}
-            <div className="w-full border-b border-white/5 pb-12 lg:pb-16">
-              <div className="mb-4 text-[10px] font-sans font-semibold uppercase tracking-widest text-gray-500">
-                LIBRARY
-              </div>
-              <h2 className="mb-6 text-2xl lg:text-3xl font-serif font-light tracking-[0.05em] text-white uppercase">Google Drive</h2>
-              <p className="mb-8 max-w-lg text-[13px] leading-relaxed text-gray-400">
-                Access your entire document library and media assets. Seamlessly manage files from your Google Drive workspace.
-              </p>
-              <a 
-                href="/google-drive" 
-                className="group inline-flex items-center gap-3 text-[12px] font-sans font-semibold uppercase tracking-widest text-white transition-colors hover:text-gray-300"
-              >
-                <span>Browse Drive</span>
-                <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </a>
-            </div>
+            <GoogleDriveDashboardContainer />
 
             {/* Workspace Stats */}
             <div className="w-full border-b border-white/5 pb-12 lg:pb-16">
@@ -160,18 +155,12 @@ export default async function Page() {
               <div className="mb-6 text-[10px] font-sans font-semibold uppercase tracking-[0.15em] text-gray-500">
                 Tasks Active
               </div>
-              <div className="text-6xl lg:text-7xl font-serif font-light tracking-tight text-white">0</div>
+              <div className="text-6xl lg:text-7xl font-serif font-light tracking-tight text-white">{activeTaskCount}</div>
               <p className="text-xs font-sans text-gray-500 mt-4">Today&apos;s priorities</p>
             </div>
 
-            {/* Quick Stat Card 2 */}
-            <div className="w-full border-t border-white/5 pt-12 lg:pt-16">
-              <div className="mb-6 text-[10px] font-sans font-semibold uppercase tracking-[0.15em] text-gray-500">
-                Drive Files
-              </div>
-              <div className="text-6xl lg:text-7xl font-serif font-light tracking-tight text-white">—</div>
-              <p className="text-xs font-sans text-gray-500 mt-4">Last synced now</p>
-            </div>
+            {/* Quick Stat Card 2 - Google Drive Filter */}
+            <GoogleDriveFilterPanel />
 
             {/* CTA Section */}
             <div className="mt-12 w-full border-t border-white/5 pt-12 lg:mt-16 lg:pt-16">
@@ -187,6 +176,7 @@ export default async function Page() {
             </div>
           </div>
         </div>
+        </GoogleDriveDashboardProviderWrapper>
       </div>
     </DashboardLayout>
   );

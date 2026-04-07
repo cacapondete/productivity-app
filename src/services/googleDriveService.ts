@@ -8,7 +8,7 @@ export async function fetchGoogleDriveFiles() {
     }
 
     const response = await fetch(
-      'https://www.googleapis.com/drive/v3/files?pageSize=15&orderBy=createdTime%20desc&fields=files(id,name,mimeType,createdTime,modifiedTime,size)',
+      'https://www.googleapis.com/drive/v3/files?pageSize=1000&orderBy=createdTime%20desc&fields=files(id,name,mimeType,createdTime,modifiedTime,size)',
       {
         headers: {
           Authorization: `Bearer ${googleToken}`,
